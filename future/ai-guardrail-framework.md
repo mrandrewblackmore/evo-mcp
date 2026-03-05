@@ -126,7 +126,56 @@ Prevent AI from crossing module boundaries or introducing new patterns:
 | **Import linter rules** (ruff `I` + `INP` rules) | Tools importing from other tools directly; circular dependencies |
 | **Forbidden patterns in CI** (grep-based checks) | Direct `requests`/`urllib` usage (must use `AioTransport`); hardcoded URLs; `print()` instead of `logger` |
 | **Module structure validation** | New tools must go in `src/evo_mcp/tools/` and follow `register_*_tools()` pattern |
+| **README architecture validation** | Verify that the architecture described in `README.md` still matches the actual codebase (see below) |
 | **ADRs** (Architecture Decision Records) in `docs/adr/` | Document *why* design choices were made so AI doesn't undo them |
+
+#### README Architecture Validation
+
+The `README.md` contains a Mermaid architecture diagram and a key components table
+that describe the system's structure. These must stay in sync with the code. An AI
+that adds a new tool category, changes the transport mechanism, or restructures
+`EvoContext` could silently make the README inaccurate.
+
+**What the README currently documents (as of March 2026):**
+
+1. **Mermaid diagram** — Shows: MCP Clients → (stdio / streamable HTTP) → Evo MCP Server → (HTTPS) → Evo APIs
+2. **Server subgraph** — Three components: Tool Modules (General · Admin · Data · Filesystem), MCP_TOOL_FILTER, EvoContext (OAuth · Tokens)
+3. **API subgraph** — Three services: Discovery, Workspace, Object
+4. **Key components table** — 5 rows: MCP clients, FastMCP server, Tool modules, EvoContext, Evo APIs
+
+**Automated checks to add in CI:**
+
+```bash
+# 1. Verify every tool category mentioned in the README diagram actually exists
+#    as a register_*_tools() function in the codebase
+for category in general admin data filesystem; do
+  grep -q "register_${category}_tools" src/evo_mcp/tools/*.py || \
+    echo "WARN: README mentions '${category}' tools but no register_${category}_tools() found"
+done
+
+# 2. Verify every Evo API mentioned in the README is actually imported/used
+for api in Discovery Workspace Object; do
+  grep -rq "${api}APIClient" src/evo_mcp/ || \
+    echo "WARN: README mentions ${api} API but ${api}APIClient not found in code"
+done
+
+# 3. Verify transport modes mentioned in README match code
+grep -q "stdio" src/mcp_tools.py || echo "WARN: README mentions stdio but not found in mcp_tools.py"
+grep -q "http" src/mcp_tools.py || echo "WARN: README mentions HTTP but not found in mcp_tools.py"
+
+# 4. Verify EvoContext still exists and handles what the README says it does
+grep -q "class EvoContext" src/evo_mcp/context.py || echo "WARN: EvoContext class not found"
+grep -q "OAuth\|oauth\|authorizer\|access_token" src/evo_mcp/context.py || \
+  echo "WARN: README says EvoContext handles OAuth but no OAuth code found in context.py"
+```
+
+**When to trigger this check:**
+- On every PR that modifies files in `src/` (code changed → does README still match?)
+- On every PR that modifies `README.md` (README changed → does it still match code?)
+
+**What to do when it fails:**
+- If code changed but README wasn't updated → PR must also update the README diagram/table
+- If README changed but doesn't match code → reject the PR
 
 Example forbidden-pattern checks for CI:
 
