@@ -31,7 +31,6 @@ original quality, style, and architectural integrity.
 - No type checking
 - No tests
 - No security scanning
-- No dependency lockfile
 - No architecture documentation beyond the basic copilot-instructions.md
 - No automated quality gates of any kind
 
@@ -147,7 +146,7 @@ grep -rn "import requests\|import urllib\|import httpx" src/ && exit 1 || true
 |---|---|
 | **pip-audit** in CI | Known vulnerabilities in dependencies |
 | **gitleaks** or **trufflehog** pre-commit hook | Secrets/tokens accidentally committed |
-| **Dependency pinning** (`uv.lock`) | Prevents supply chain attacks from unpinned transitive deps |
+| **Dependency pinning** (`uv.lock`) | Prevents supply chain attacks from unpinned transitive deps (already in place) |
 | **SPDX/reuse lint** (already in dev deps) | Missing license headers on new files |
 | **No `eval()`, `exec()`, `subprocess` scan** | AI-generated code sometimes introduces unsafe patterns |
 
