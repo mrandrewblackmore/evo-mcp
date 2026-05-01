@@ -6,19 +6,22 @@
 Utility modules for Evo MCP operations.
 """
 
-from .evo_data_utils import extract_data_references, copy_object_data
+from .duplicate_analysis import AnalysisResult, analyze_duplicate_objects
+from .evo_data_utils import copy_object_data, extract_data_references
 from .object_builders import (
     BaseObjectBuilder,
-    PointsetBuilder,
-    LineSegmentsBuilder,
     DownholeCollectionBuilder,
+    LineSegmentsBuilder,
+    PointsetBuilder,
 )
 
 __all__ = [
-    'extract_data_references',
-    'copy_object_data',
-    'BaseObjectBuilder',
-    'PointsetBuilder',
-    'LineSegmentsBuilder',
-    'DownholeCollectionBuilder',
+    "AnalysisResult",
+    "BaseObjectBuilder",
+    "DownholeCollectionBuilder",
+    "LineSegmentsBuilder",
+    "PointsetBuilder",
+    "analyze_duplicate_objects",
+    "copy_object_data",
+    "extract_data_references",
 ]

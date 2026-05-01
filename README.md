@@ -232,15 +232,31 @@ The Streamable HTTP protocol provides full bidirectional communication between c
 
 #### 5. Configure your environment
 
+Make a copy of the file `.env.example` and rename it to `.env`. Fill in your app credentials as described below.
+
 ##### Evo app credentials
 
-You first need to create a **native app** in the [iTwin Developer Portal](https://developer.bentley.com/register/?product=seequent-evo). This app will allow you to sign in with your Bentley account in access Seequent Evo. Visit the [Evo Developer Portal](https://developer.seequent.com/docs/guides/getting-started/apps-and-tokens) to learn more.
+You first need to create a **native app** in the [iTwin Developer Portal](https://developer.bentley.com/register/?product=seequent-evo). This app will allow you to sign in with your Bentley account to access Seequent Evo. Visit the [Evo Developer Portal](https://developer.seequent.com/docs/guides/getting-started/apps-and-tokens) to learn more.
 
-Make a copy of the file `.env.example` and rename it to `.env`. Fill in your app credentials:
+Fill in your app credentials in the `.env` file:
 ```bash
 EVO_CLIENT_ID=your-client-id
 EVO_REDIRECT_URL=your-redirect-url
 ```
+
+When you first use the server it will open your browser so you can sign in with your Bentley account. This gives the server access to any Evo instance and workspace your account has access to.
+
+##### Alternative: Service authentication (for automation/CI)
+
+If you need to run the server without interactive sign-in (e.g. automation, CI/CD, or background services), you can use a **service app** instead. Create a service app in the iTwin Developer Portal and set the following in your `.env` file:
+
+```bash
+AUTH_METHOD=client_credentials
+EVO_CLIENT_ID=your-service-client-id
+EVO_CLIENT_SECRET=your-service-client-secret
+```
+
+Note: The service app must be explicitly granted access to your Evo instance and workspaces.
 
 ##### MCP transport mode (optional)
 
@@ -357,7 +373,7 @@ python scripts/setup_mcp.py
   - For HTTP mode, use `templates/cursor-http-config.json` instead.
   - Update the template URL host and port to match `MCP_HTTP_HOST` and `MCP_HTTP_PORT` in your `.env`, and ensure the HTTP server is running.
 2. Open the **Command Palette** (press `Cmd+Shift+P` on macOS / `Ctrl+Shift+P` on Windows/Linux).
-3. Search for "mcp". Select either **View: Open MCP Settings** to update the user settings.
+3. Search for "mcp". Select **View: Open MCP Settings** to update the user settings.
   ![Cursor Command Palette](images/cursor-command-palette.png)
 
 4. Click the **Add Custom MCP** button.
@@ -506,6 +522,39 @@ To add new MCP tools:
 2. Decorate with `@mcp.tool()` decorator
 3. Tools are auto-registered based on their module (general/admin/data) on server startup
 4. Test using VS Code integration or the ADK agent
+
+### Linting
+
+This repository uses Ruff for linting and formatting checks.
+Linting also verifies that Python files include the required SPDX license header.
+
+Run lint checks:
+
+```bash
+make lint
+```
+
+Auto-fix lint and formatting issues:
+
+```bash
+make lint-fix
+```
+
+### Pre-commit
+
+Install pre-commit hooks:
+
+The local pre-commit hook will also auto-insert missing SPDX headers in Python files.
+
+```bash
+uv run --extra dev pre-commit install
+```
+
+Run hooks on all files:
+
+```bash
+uv run --extra dev pre-commit run --all-files
+```
 
 ## Contributing
 
